@@ -19,4 +19,4 @@ def preprocessing():
    target_features = ["casual", "registered", "count"]
    train_data_features, train_data_targets = get_target_features(target_features, train_data)
    test_data_features, test_data_targets = get_target_features(target_features, test_data)
-   return train_data_features, train_data_targets, test_data_features, test_data_targets
+   return train_data_features.iloc[1:], train_data_targets.iloc[1:], test_data_features.iloc[1:], test_data_targets.iloc[1:]

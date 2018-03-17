@@ -34,5 +34,8 @@ def get_test_train_data(percentage,data):
     return data[:test_row_count],data[test_row_count:]
 
 def get_target_features(target_fields,data):
-    return data.drop(target_fields,axis=1), data[target_fields]
-
+    data_features = data.drop(target_fields,axis=1)
+    data_target =  data[target_fields]
+    data_features.columns = ['']*len(data_features.columns)
+    data_target.columns  = ['']*len(data_target.columns)
+    return data_features,data_target
