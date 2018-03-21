@@ -28,27 +28,50 @@ class NeuralNetwork(object):
         labels_count = self.no_of_labels
         features = tf.placeholder("float")
         labels = tf.placeholder("float")
-        weights = tf.Variable(tf.truncated_normal((features_count,labels_count)))
-        biases = tf.Variable(tf.zeros(labels_count))
-        logits = tf.matmul(features, weights) + biases
+        layer1_weight_shape = (features_count,64)
+        layer2_weight_shape = (64,128)
+        layer3_weight_shape = (128,labels_count)
+        layer1_bias_shape = (64)
+        layer2_bias_shape = (128)
+        layer3_bias_shape = (labels_count)
+        weights_shape_matrix = [
+            layer1_weight_shape,layer2_weight_shape,layer3_weight_shape
+        ]
+        bias_shape_matrix = [
+            layer1_bias_shape,layer2_bias_shape,layer3_bias_shape
+        ]
+
+
+        weights_layer0 = tf.Variable(tf.truncated_normal((weights_shape_matrix[0])))
+        biases_layer0 = tf.Variable(tf.zeros(bias_shape_matrix[0]))
+        output_layer0 = tf.matmul(features, weights_layer0) + biases_layer0
+        output_layer0 = tf.layers.dropout(output_layer0,rate=0.5)
+        output_layer0 = tf.sigmoid(output_layer0)
+        weights_layer1 = tf.Variable(tf.truncated_normal((weights_shape_matrix[1])))
+        biases_layer1 = tf.Variable(tf.zeros(bias_shape_matrix[1]))
+        output_layer1 = tf.matmul(output_layer0, weights_layer1) + biases_layer1
+        output_layer1 = tf.layers.dropout(output_layer1, rate=0.5)
+        output_layer1 = tf.sigmoid(output_layer1)
+        weights_layer2 = tf.Variable(tf.truncated_normal((weights_shape_matrix[2])))
+        biases_layer2 = tf.Variable(tf.zeros(bias_shape_matrix[2]))
+        logits = tf.matmul(output_layer1, weights_layer2) + biases_layer2
         prediction = tf.nn.softmax(logits)
         # Cross entropy
-        cross_entropy = -tf.reduce_sum(labels * tf.log(prediction), reduction_indices=1)
+        cross_entropy = -tf.reduce_sum(tf.sqrt((labels - prediction)*(labels - prediction)), reduction_indices=1)
         # Training loss
-        loss = tf.reduce_mean(cross_entropy)
+        loss  = tf.train.RMSPropOptimizer(0.001).minimize(cross_entropy)
         # Create an operation that initializes all variables
         init = tf.global_variables_initializer()
         with tf.Session() as session:
             session.run(init)
             session.run(loss,feed_dict={features:self.train_features,labels:self.train_target})
-            biases_data = session.run(biases)
+          #  biases_data = session.run(biases)
             is_correct_prediction = tf.equal(tf.argmax(prediction, 1), tf.argmax(labels, 1))
             # Calculate the accuracy of the predictions
             accuracy = tf.reduce_mean(tf.cast(is_correct_prediction, tf.float32))
             #Print the accuracy of the model
             accuracy = session.run(accuracy,feed_dict={labels:self.train_target,features:self.train_features})
             print ("Accuracy is "+str((accuracy)))
-
 
 
          
